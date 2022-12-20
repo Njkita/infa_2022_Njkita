@@ -7,6 +7,8 @@ from random import choice
 from weapon import Weapon
 from userinterface import UI
 from monsters import Enemy
+from particles import AnimationPlayer
+from magic import MagicPlayer
 
 class Level:
     def __init__(self):
@@ -29,14 +31,20 @@ class Level:
         
         #пользовательский интерфейс
         self.ui = UI()
+        self.animation_player = AnimationPlayer()
+        self.magic_player = MagicPlayer(self.animation_player)
     
     def create_attack(self):
         self.actual_attack = Weapon(self.player,[self.visible_sprites, 
                                                  self.attack_sprites])
     
     def create_magic(self, style, strength, cost):
-        #self.actual_magic = magic(self.player,[self.visible_sprites])
-        pass
+        if style == 'heal':
+            self.magic_player.heal(self.player,strength,cost,[self.visible_sprites])
+            
+        if style == 'flame':
+            self.magic_player.flame(self.player,cost,[self.visible_sprites,self.attack_sprites])
+
     
     def destroy_attack(self):
         if self.actual_attack:
@@ -121,14 +129,44 @@ class Level:
                                       (x, y), 
                                       [self.visible_sprites, 
                                        self.attackable_sprites],
-                                      self.obstacle_sprites
+                                      self.obstacle_sprites,
+                                      self.damage_player,
+                                      self.add_exp
                                       )
        
+    def player_attack_logick(self):
+        if self.attack_sprites:
+            for attack_sprites in self.attack_sprites:
+                collision_sprites = pygame.sprite.spritecollide(attack_sprites, 
+                                            self.attackable_sprites, 
+                                            False) #список столкнувшихся с игроком спрайтов
+                if collision_sprites:
+                    for target_sprite in collision_sprites:
+                        if target_sprite.sprite_type == 'grass':
+                            target_sprite.kill()
+                        else:
+                            target_sprite.get_damage(self.player,
+                                                     attack_sprites.sprite_type)
+                            
+    def damage_player(self, amount, attack_type):
+        if self.player.vulnerable:
+            self.player.health -= amount
+            self.player.vulnerable = False
+            self.player.hurt_time = pygame.time.get_ticks()
+            #self.animation_player.create_particles(attack_type,
+                                          #self.player.rect.center,
+                                          #[self.visible_sprites])
+
+    
+    def add_exp(self, amount):
         
+        self.player.exp += amount 
+    
     def run(self):
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
         self.visible_sprites.enemy_update(self.player)
+        self.player_attack_logick()
         self.ui.display(self.player)
         
         

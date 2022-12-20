@@ -47,6 +47,11 @@ class Player(Entity):
         self.energy = self.stats['energy']
         self.exp = 100
         self.speed = self.stats['speed']
+        
+        #таймер урона
+        self.vulnerable = True
+        self.hurt_time = None
+        self.invulnerability_duration = 500
     
     def import_player_assets(self):
         #скины
@@ -171,13 +176,18 @@ class Player(Entity):
         
         #для оружия        
         if not self.can_switch_weapon:
-            if actual_time - self.weapon_switch_time >= self.switch_duration_cooldown:
+            if actual_time - self.weapon_switch_time >= self.switch_duration_cooldown + weapon_data[self.weapon]['cooldown']:
                 self.can_switch_weapon = True
         
         #для магии
         if not self.can_switch_magic:
             if actual_time - self.magic_switch_time >= self.switch_duration_cooldown:
                 self.can_switch_magic = True
+                
+        if not self.vulnerable:
+            if actual_time - self.hurt_time >= self.invulnerability_duration:
+                self.vulnerable = True
+
     
     def animate(self):
         animation = self.animations[self.status]
@@ -189,6 +199,23 @@ class Player(Entity):
         #создание изображения
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
+        
+        #мерцание
+        if not self.vulnerable:
+            alpha = self.wave_value()
+            self.image.set_alpha(alpha)
+        else:
+            self.image.set_alpha(255)
+        
+    def get_full_weapon_damage(self):
+        base_damage = self.stats['attack']
+        weapon_damage = weapon_data[self.weapon]['damage']
+        return weapon_damage + base_damage
+    
+    def get_full_magic_damage(self):
+        base_damage = self.stats['magic']
+        spell_damage = magic_data[self.magic]['strength']
+        return base_damage + spell_damage
     
     def update(self):
         self.input()
