@@ -10,7 +10,7 @@ class AnimationPlayer:
 			'aura': import_folder('../graphics/particles/aura'),
 			'heal': import_folder('../graphics/particles/heal/frames'),
 			}
-	
+		
 	def reflect_images(self,frames):
 		new_frames = []
 
@@ -18,6 +18,14 @@ class AnimationPlayer:
 	 		flipped_frame = pygame.transform.flip(frame,True,False)
 	 		new_frames.append(flipped_frame)
 		return new_frames
+	
+	def create_grass_particles(self,pos,groups):
+	 	animation_frames = choice(self.frames['leaf'])
+	 	ParticleEffect(pos,animation_frames,groups)
+
+	def create_particles(self,animation_type,pos,groups):
+		animation_frames = self.frames[animation_type]
+		ParticleEffect(pos,animation_frames,groups)
 
 	
 
