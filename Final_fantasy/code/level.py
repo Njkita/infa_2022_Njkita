@@ -1,9 +1,9 @@
 import pygame 
+from random import choice
 from settings import *
 from support import *
 from tile import Tile
 from player import Player
-from random import choice
 from weapon import Weapon
 from userinterface import UI
 from monsters import Enemy
@@ -52,7 +52,7 @@ class Level:
         self.actual_attack = None
     
     def create_map(self):
-        #макеты
+        #макеты экселя
         layouts = {
             'boundary': import_csv_layout('../map/Map2_FloorBlocks.csv'),
             'grass': import_csv_layout('../map/Map2_Grass.csv'),
